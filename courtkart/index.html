@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CourtKart – Basketball Gear Store</title>
+<style>
+:root{--bg:#eef1f4;--ink:#101828;--mute:#5b6577;--card:#fff;--line:#d9dee6;--acc:#ff5a1f;--acc2:#0b3d91;--ok:#16794c;--warn:#b42318;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e131b;--ink:#eef1f6;--mute:#9aa5b8;--card:#171e29;--line:#2a3445;--acc2:#6ea0ff}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Trebuchet MS",Verdana,sans-serif;line-height:1.5}
+header{background:var(--acc2);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.3rem;letter-spacing:.5px;flex:1}
+nav{display:flex;gap:8px}
+button,select,input{font:inherit}
+.btn{border:0;border-radius:8px;padding:8px 14px;cursor:pointer;background:var(--acc);color:#fff;font-weight:bold}
+.btn.alt{background:transparent;border:2px solid currentColor}
+.btn.sm{padding:4px 9px;font-size:.85rem}
+.btn.danger{background:var(--warn)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+header .btn.alt{color:#fff}
+header .btn.on{background:#fff;color:var(--acc2)}
+main{max-width:1050px;margin:0 auto;padding:16px}
+.hero{padding:28px 4px 10px}
+.hero h2{font-size:clamp(1.8rem,6vw,3rem);margin:0 0 6px;line-height:1.1}
+.hero p{margin:0;color:var(--mute);max-width:52ch}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.bar input,.bar select{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.bar input{flex:1;min-width:160px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.p{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.p .img{height:120px;display:grid;place-items:center;font-size:3.4rem}
+.p .b{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1}
+.p h3{margin:0;font-size:1.02rem}
+.cat{color:var(--mute);font-size:.85rem}
+.price{font-weight:bold;font-size:1.15rem}
+.stock{font-size:.85rem}
+.stock.low{color:var(--warn)}.stock.ok{color:var(--ok)}
+.p .btn{margin-top:auto}
+section[hidden]{display:none}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px}
+.stat b{font-size:1.5rem;display:block}
+.stat span{color:var(--mute);font-size:.85rem}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);font-size:.92rem}
+td input{width:80px;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.form input,.form select{padding:9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.cart-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.qty{display:flex;align-items:center;gap:6px}
+.total{font-size:1.3rem;font-weight:bold;text-align:right;margin-top:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+footer{text-align:center;color:var(--mute);padding:20px;font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏀 CourtKart</h1>
+  <nav>
+    <button class="btn alt on" id="tShop">Shop</button>
+    <button class="btn alt" id="tCart">Cart (<span id="cc">0</span>)</button>
+    <button class="btn alt" id="tInv">Inventory</button>
+  </nav>
+</header>
+<main>
+<section id="shop">
+  <div class="hero">
+    <h2>Gear up for game day.</h2>
+    <p>Shoes, balls and team wear for campus and street players. Pick your gear and check out in seconds.</p>
+  </div>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search products" aria-label="Search products">
+    <select id="cf" aria-label="Filter by category"></select>
+  </div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="cart" hidden>
+  <h2>Your cart</h2>
+  <div class="panel" id="cartBox"></div>
+</section>
+
+<section id="inv" hidden>
+  <h2>Inventory management</h2>
+  <div class="stats" id="stats"></div>
+  <div class="panel">
+    <h3 style="margin-top:0">Add a product</h3>
+    <div class="form">
+      <input id="nName" placeholder="Name">
+      <select id="nCat"><option>Shoes</option><option>Balls</option><option>Apparel</option><option>Accessories</option></select>
+      <input id="nPrice" type="number" min="0" placeholder="Price (₹)">
+      <input id="nStock" type="number" min="0" placeholder="Stock">
+      <input id="nEmoji" placeholder="Emoji (e.g. 🏀)" maxlength="2">
+      <button class="btn" id="add">Add product</button>
+    </div>
+  </div>
+  <div class="panel wrap">
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th>Price (₹)</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <button class="btn alt" id="reset" style="color:var(--ink)">Reset sample data</button>
+</section>
+</main>
+<footer>CourtKart – demo store with live inventory. Stock updates when you add to cart or check out.</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const SEED=[
+ {id:1,name:"Court Pro Sneakers",cat:"Shoes",price:4999,stock:12,e:"👟",c:"#ffe2d4"},
+ {id:2,name:"Street Low Tops",cat:"Shoes",price:3499,stock:3,e:"👟",c:"#dbe8ff"},
+ {id:3,name:"Indoor Game Ball",cat:"Balls",price:1799,stock:25,e:"🏀",c:"#ffe9c7"},
+ {id:4,name:"Outdoor Rubber Ball",cat:"Balls",price:1199,stock:18,e:"🏀",c:"#ffe2d4"},
+ {id:5,name:"Team Jersey",cat:"Apparel",price:1499,stock:30,e:"👕",c:"#d9f2e6"},
+ {id:6,name:"Training Shorts",cat:"Apparel",price:899,stock:2,e:"🩳",c:"#dbe8ff"},
+ {id:7,name:"Sweat Wristbands",cat:"Accessories",price:299,stock:0,e:"🧤",c:"#eadcff"},
+ {id:8,name:"Ball Pump Kit",cat:"Accessories",price:449,stock:40,e:"🛠️",c:"#d9f2e6"}
+];
+let items=[],cart={},nextId=100,LOW=5;
+const $=id=>document.getElementById(id);
+const fmt=n=>"₹"+Number(n).toLocaleString("en-IN");
+function load(){try{const s=localStorage.getItem("ck_items");if(s){items=JSON.parse(s);nextId=Math.max(100,...items.map(i=>i.id+1));return}}catch(e){}items=JSON.parse(JSON.stringify(SEED))}
+function save(){try{localStorage.setItem("ck_items",JSON.stringify(items))}catch(e){}}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),1800)}
+function show(v){["shop","cart","inv"].forEach(s=>$(s).hidden=s!==v);
+ [["tShop","shop"],["tCart","cart"],["tInv","inv"]].forEach(([b,s])=>$(b).classList.toggle("on",s===v));
+ render()}
+function cats(){const c=["All",...new Set(items.map(i=>i.cat))];const cur=$("cf").value||"All";$("cf").innerHTML=c.map(x=>`<option ${x===cur?"selected":""}>${x}</option>`).join("")}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function status(i){return i.stock===0?'<span class="stock low">Out of stock</span>':i.stock<=LOW?`<span class="stock low">Low – ${i.stock} left</span>`:`<span class="stock ok">In stock (${i.stock})</span>`}
+function renderShop(){
+ const q=$("q").value.toLowerCase(),c=$("cf").value||"All";
+ const list=items.filter(i=>(c==="All"||i.cat===c)&&i.name.toLowerCase().includes(q));
+ $("grid").innerHTML=list.length?list.map(i=>`<div class="p"><div class="img" style="background:${i.c||"#e5e9f0"}">${esc(i.e||"🏀")}</div><div class="b"><span class="cat">${esc(i.cat)}</span><h3>${esc(i.name)}</h3><div class="price">${fmt(i.price)}</div>${status(i)}<button class="btn" data-add="${i.id}" ${i.stock===0?"disabled":""}>${i.stock===0?"Sold out":"Add to cart"}</button></div></div>`).join(""):"<p>No products match your search.</p>"}
+function renderCart(){
+ const ids=Object.keys(cart).filter(k=>cart[k]>0);
+ if(!ids.length){$("cartBox").innerHTML="<p>Your cart is empty. Add something from the shop.</p>";return}
+ let total=0;
+ const rows=ids.map(k=>{const i=items.find(x=>x.id==k);if(!i)return"";const t=i.price*cart[k];total+=t;
+  return `<div class="cart-row"><div>${esc(i.e||"")} <b>${esc(i.name)}</b><br><span class="cat">${fmt(i.price)} each</span></div><div class="qty"><button class="btn sm alt" style="color:var(--ink)" data-dec="${k}">−</button><b>${cart[k]}</b><button class="btn sm alt" style="color:var(--ink)" data-inc="${k}">+</button></div><b>${fmt(t)}</b></div>`}).join("");
+ $("cartBox").innerHTML=rows+`<div class="total">Total: ${fmt(total)}</div><div style="text-align:right;margin-top:10px"><button class="btn" id="co">Check out</button></div>`}
+function renderInv(){
+ const val=items.reduce((s,i)=>s+i.price*i.stock,0),units=items.reduce((s,i)=>s+i.stock,0);
+ $("stats").innerHTML=`<div class="stat"><b>${items.length}</b><span>Products</span></div><div class="stat"><b>${units}</b><span>Units in stock</span></div><div class="stat"><b>${fmt(val)}</b><span>Stock value</span></div><div class="stat"><b>${items.filter(i=>i.stock>0&&i.stock<=LOW).length}</b><span>Low stock</span></div><div class="stat"><b>${items.filter(i=>i.stock===0).length}</b><span>Out of stock</span></div>`;
+ $("rows").innerHTML=items.map(i=>`<tr><td>${esc(i.e||"")} ${esc(i.name)}</td><td>${esc(i.cat)}</td><td><input type="number" min="0" value="${i.price}" data-price="${i.id}" aria-label="Price"></td><td><input type="number" min="0" value="${i.stock}" data-stock="${i.id}" aria-label="Stock"></td><td>${status(i)}</td><td><button class="btn sm danger" data-del="${i.id}">Delete</button></td></tr>`).join("")}
+function render(){cats();$("cc").textContent=Object.values(cart).reduce((a,b)=>a+b,0);
+ if(!$("shop").hidden)renderShop();if(!$("cart").hidden)renderCart();if(!$("inv").hidden)renderInv()}
+
+document.addEventListener("click",e=>{
+ const t=e.target;
+ if(t.dataset.add){const i=items.find(x=>x.id==t.dataset.add);const n=(cart[i.id]||0)+1;if(n>i.stock){toast("Only "+i.stock+" available");return}cart[i.id]=n;toast(i.name+" added");render()}
+ if(t.dataset.inc){const i=items.find(x=>x.id==t.dataset.inc);if(cart[i.id]<i.stock)cart[i.id]++;else toast("No more stock");render()}
+ if(t.dataset.dec){cart[t.dataset.dec]--;if(cart[t.dataset.dec]<=0)delete cart[t.dataset.dec];render()}
+ if(t.id==="co"){for(const k in cart){const i=items.find(x=>x.id==k);if(i)i.stock=Math.max(0,i.stock-cart[k])}cart={};save();toast("Order placed! Inventory updated.");render()}
+ if(t.dataset.del){if(confirm("Delete this product?")){items=items.filter(x=>x.id!=t.dataset.del);delete cart[t.dataset.del];save();render()}}
+});
+document.addEventListener("change",e=>{
+ const t=e.target;
+ if(t.dataset.stock){const i=items.find(x=>x.id==t.dataset.stock);i.stock=Math.max(0,parseInt(t.value)||0);if(cart[i.id]>i.stock)cart[i.id]=i.stock;save();render()}
+ if(t.dataset.price){const i=items.find(x=>x.id==t.dataset.price);i.price=Math.max(0,parseInt(t.value)||0);save();render()}
+});
+$("q").oninput=renderShop;$("cf").onchange=renderShop;
+$("tShop").onclick=()=>show("shop");$("tCart").onclick=()=>show("cart");$("tInv").onclick=()=>show("inv");
+$("add").onclick=()=>{const n=$("nName").value.trim(),p=parseInt($("nPrice").value),s=parseInt($("nStock").value);
+ if(!n||isNaN(p)||isNaN(s)){toast("Enter name, price and stock");return}
+ items.push({id:nextId++,name:n,cat:$("nCat").value,price:p,stock:s,e:$("nEmoji").value||"🏀",c:"#e5e9f0"});
+ ["nName","nPrice","nStock","nEmoji"].forEach(x=>$(x).value="");save();toast("Product added");render()};
+$("reset").onclick=()=>{items=JSON.parse(JSON.stringify(SEED));cart={};save();render()};
+load();render();
+</script>
+</body>
+</html>
